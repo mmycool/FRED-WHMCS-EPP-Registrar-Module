@@ -6,11 +6,4 @@ Copy the folder 'fred' to 'YOUR_PATH_TO_WHMCS/modules/registrars/'
 Click then on "Products / Services" => "Domain Registrars"
 Enable fred module.
 
-Prepare your certificate file by pasting the private key below the certificate data as follows:
-
------BEGIN CERTIFICATE-----
-certificate data here
------END CERTIFICATE-----
------BEGIN RSA PRIVATE KEY-----
-Private key data here
------END RSA PRIVATE KEY-----
+Prepare your certificate file by pasting the private key below the certificate to appear as the sample given... 'cert.pem'.
