@@ -7,7 +7,7 @@ define('EPP_PORT',          700);
 define('EPP_TIMEOUT',       60);
 
 // EPP Cert information
-define('EPP_CERT',         'cert.pem');
+define('EPP_CERT',         'certs.pem');
 
 
 // EPP Auth information
