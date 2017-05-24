@@ -130,7 +130,7 @@ function fred_SaveNameservers($params) {
 							$values["error"] = $messagecode . " - " . $message;
 							return $values;
 						}
-					}
+					
      //Update The domain with the new NSSET 
  $xml = $epp->eppDomainNSSETUpdate($domain, $hostID);
  $response = $epp->request($xml);
