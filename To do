@@ -1,3 +1,4 @@
 Synchronization Scripts
 Polling scripts
 Locks
+Remove the config file and store the configurations in the database
