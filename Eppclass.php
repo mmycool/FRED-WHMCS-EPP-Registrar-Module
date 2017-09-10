@@ -63,7 +63,8 @@ class myfredEPP {
 		$context = stream_context_create(array(
 			'ssl'=>array(			
 			'local_cert' => EPP_CERT,
-             		            								
+             		 'verify_peer' => false,
+                         'verify_peer_name' => false,	           								
 			)
 		));
 
