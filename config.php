@@ -2,7 +2,7 @@
 
 
 // EPP Server settings
-define('EPP_HOST',          'sslv3://server');
+define('EPP_HOST',          'tls://server'); //Protocol setting depends on the allowed protocols on both sides...registry and client PHP setting...sslv3, tls, etc
 define('EPP_PORT',          700);
 define('EPP_TIMEOUT',       60);
 
