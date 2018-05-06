@@ -1,7 +1,6 @@
 <?php
 require dirname(__FILE__) ."/config.php";
 require dirname(__FILE__) ."/Eppclass.php";
-
 function fred_getConfigArray() {
 	$configarray = array(
 	 "Username" => array( "Type" => "text", "Size" => "20", "Description" => "Enter your username here", ),
@@ -42,7 +41,7 @@ function fred_GetNameservers($params) {
 			$values["error"] = $messagecode . " - " . $message;
 			return $values;
 		}
-		
+		//$ns = $doc->getElementsByTagName("hostObj");
 		//Get the nsset id
 		$nsset = $doc->getElementsByTagName("nsset")->item(0)->nodeValue;
 		$hostarr = $epp->eppHostInfo($nsset);
@@ -63,9 +62,9 @@ function fred_GetNameservers($params) {
 	}
 	$xml = $epp->eppLogout();
 	$response = $epp->request($xml);
-	
+	//if ($params["debug"] == "on") {
 		logModuleCall("fredEPP", "EPP Logout", $xml, $response);
-	
+	//}
 	return $values;
 }
 
@@ -98,7 +97,122 @@ function fred_SaveNameservers($params) {
 		$message = $doc->getElementsByTagName("msg")->item(0)->nodeValue;
 		//Get Registrant info
 		$RegistrantContactID = $doc->getElementsByTagName("registrant")->item(0)->nodeValue;
+		/*
+		if ($messagecode != "1000") {
+			$xml = $epp->eppLogout();
+			$response = $epp->request($xml);
+			if ($params["debug"] == "on") {
+				logModuleCall("fredEPP", "EPP Logout", $xml, $response);
+			}
+			$values["error"] = $messagecode . " - " . $message;
+			return $values;
+		}
+		$nsarray = $doc->getElementsByTagName("hostObj");
+		$currentns = array();
+		foreach ($nsarray as $nn) {
+			$currentns[] = $nn->nodeValue;
+		}
+		$newnsdiff = array_diff($ns, array_intersect($ns, $currentns));
+		$oldnsdiff = array_diff($currentns, array_intersect($currentns, $ns));
+		$newns = $newnsdiff;
+		$oldns = $oldnsdiff;
+			foreach ($newns as $hostname) {
+				if (!($hostname != "")) {
+					continue;
+				}
+				$xml = $epp->eppHostCheck($hostname);
+				$response = $epp->request($xml);
+				$doc = new DOMDocument();
+				$doc->loadXML($response);
+				if ($params["debug"] == "on") {
+					logModuleCall("fredEPP", "EPP Host Check", $xml, $response);
+				}
+				$messagecode = $doc->getElementsByTagName("result")->item(0)->getAttribute("code");
+				$message = $doc->getElementsByTagName("msg")->item(0)->nodeValue;
+				if ($messagecode != "1000") {
+					$xml = $epp->eppLogout();
+					$response = $epp->request($xml);
+					if ($params["debug"] == "on") {
+						logModuleCall("fredEPP", "EPP Logout", $xml, $response);
+					}
+					$values["error"] = $messagecode . " - " . $message;
+					return $values;
+				}
+				$available = $doc->getElementsByTagName("name")->item(0)->getAttribute("avail");
+				if (!($available != "0" && $available != "false")) {
+					continue;
+				}
+				$xml = $epp->eppHostCreate($hostname, "");
+				$response = $epp->request($xml);
+				$doc = new DOMDocument();
+				$doc->loadXML($response);
+				if ($params["debug"] == "on") {
+					logModuleCall("fredEPP", "EPP Host Create", $xml, $response);
+				}
+				$messagecode = $doc->getElementsByTagName("result")->item(0)->getAttribute("code");
+				$message = $doc->getElementsByTagName("msg")->item(0)->nodeValue;
+				if (!($messagecode != "1000")) {
+					continue;
+				}
+				$xml = $epp->eppLogout();
+				$response = $epp->request($xml);
+				if ($params["debug"] == "on") {
+					logModuleCall("fredEPP", "EPP Logout", $xml, $response);
+				}
+				$values["error"] = $messagecode . " - " . $message;
+				return $values;
+			}
 		
+		$xml = $epp->eppDomainDNSUpdate($params["sld"] . "." . $params["tld"], $newns, $oldns);
+		$response = $epp->request($xml);
+		$doc = new DOMDocument();
+		$doc->loadXML($response);
+		if ($params["debug"] == "on") {
+			logModuleCall("fredEPP", "EPP Domain DNS Update", $xml, $response);
+		}
+		$messagecode = $doc->getElementsByTagName("result")->item(0)->getAttribute("code");
+		$message = $doc->getElementsByTagName("msg")->item(0)->nodeValue;
+		if ($messagecode != "1000" && $messagecode != "1001") {
+			$xml = $epp->eppLogout();
+			$response = $epp->request($xml);
+			if ($params["debug"] == "on") {
+				logModuleCall("fredEPP", "EPP Logout", $xml, $response);
+			}
+			$values["error"] = $messagecode . " - " . $message;
+			return $values;
+		}
+		*/
+
+
+//Create New NSSET
+ $hostID = $epp->eppContactId(16, "", "", 1);
+					$xml = $epp->eppHostCheck($hostID);
+					$response = $epp->request($xml);
+					$doc = new DOMDocument();
+					$doc->loadXML($response);
+					//if ($params["debug"] == "on") {
+						logModuleCall("fredEPP", "EPP Host Check", $xml, $response);
+					//}
+					$messagecode = $doc->getElementsByTagName("result")->item(0)->getAttribute("code");
+					$message = $doc->getElementsByTagName("msg")->item(0)->nodeValue;
+					if ($messagecode != "1000") {
+						$xml = $epp->eppLogout();
+						$response = $epp->request($xml);
+						if ($params["debug"] == "on") {
+							logModuleCall("fredEPP", "EPP Logout", $xml, $response);
+						}
+						$values["error"] = $messagecode . " - " . $message;
+						return $values;
+					}
+					$hostAvailable = $doc->getElementsByTagName("id")->item(0)->getAttribute("avail");
+					if ($hostAvailable != "0" && $hostAvailable != "false") {
+						/*$i = 0;
+						foreach ($ns as $hostname) {
+							$host[$i]["name"] = $hostname;
+							$host[$i]["ip"] = array();
+							++$i;
+						}
+						*/
 	$nameservers=array();
     if (!empty($params["ns1"]))
         array_push($nameservers,$params["ns1"]);
@@ -116,9 +230,9 @@ function fred_SaveNameservers($params) {
 						$doc = new DOMDocument();
 						$doc->loadXML($response);
 						
-						
+						//if ($params["debug"] == "on") {
 							logModuleCall("fredEPP", "EPP Host Create", $xml, $response);
-						
+						//}
 						$messagecode = $doc->getElementsByTagName("result")->item(0)->getAttribute("code");
 						$message = $doc->getElementsByTagName("msg")->item(0)->nodeValue;
 						if ($messagecode != "1000") {
@@ -130,15 +244,15 @@ function fred_SaveNameservers($params) {
 							$values["error"] = $messagecode . " - " . $message;
 							return $values;
 						}
-					
+					}
      //Update The domain with the new NSSET 
  $xml = $epp->eppDomainNSSETUpdate($domain, $hostID);
  $response = $epp->request($xml);
 						$doc = new DOMDocument();
 						$doc->loadXML($response);
-						
+						//if ($params["debug"] == "on") {
 							logModuleCall("fredEPP", "EPP Domain Update", $xml, $response);
-						
+						//}
 						$messagecode = $doc->getElementsByTagName("result")->item(0)->getAttribute("code");
 						$message = $doc->getElementsByTagName("msg")->item(0)->nodeValue;
 						if ($messagecode != "1000") {
@@ -268,7 +382,29 @@ function fred_RegisterDomain($params) {
 	$ns[1] = $params["ns2"];
         $ns[2] = $params["ns3"];
         $ns[3] = $params["ns4"];
-	
+	/*# Registrant Details
+	$RegistrantFirstName = $params["firstname"];
+	$RegistrantLastName = $params["lastname"];
+	$RegistrantAddress1 = $params["address1"];
+	$RegistrantAddress2 = $params["address2"];
+	$RegistrantCity = $params["city"];
+	$RegistrantStateProvince = $params["state"];
+	$RegistrantPostalCode = $params["postcode"];
+	$RegistrantCountry = $params["country"];
+	$RegistrantEmailAddress = $params["email"];
+	$RegistrantPhone = $params["phonenumber"];
+	# Admin Details
+	$AdminFirstName = $params["adminfirstname"];
+	$AdminLastName = $params["adminlastname"];
+	$AdminAddress1 = $params["adminaddress1"];
+	$AdminAddress2 = $params["adminaddress2"];
+	$AdminCity = $params["admincity"];
+	$AdminStateProvince = $params["adminstate"];
+	$AdminPostalCode = $params["adminpostcode"];
+	$AdminCountry = $params["admincountry"];
+	$AdminEmailAddress = $params["adminemail"];
+	$AdminPhone = $params["adminphonenumber"];
+	*/
 	# Put your code to register domain here
 	# If error, return the error message in the value below
 	$name = $params["original"]["firstname"] . " " . $params["original"]["lastname"];
@@ -361,9 +497,9 @@ function fred_RegisterDomain($params) {
 					$response = $epp->request($xml);
 					$doc = new DOMDocument();
 					$doc->loadXML($response);
-					
+					//if ($params["debug"] == "on") {
 						logModuleCall("fredEPP", "EPP Admin Contact Check", $xml, $response);
-					
+					//}
 					$messagecode = $doc->getElementsByTagName("result")->item(0)->getAttribute("code");
 					$message = $doc->getElementsByTagName("msg")->item(0)->nodeValue;
 					if ($messagecode != "1000") {
@@ -382,9 +518,9 @@ function fred_RegisterDomain($params) {
 						$response = $epp->request($xml);
 						$doc = new DOMDocument();
 						$doc->loadXML($response);
-						
+						//if ($params["debug"] == "on") {
 							logModuleCall("fredEPP", "Admin EPP Contact Create", $xml, $response);
-						
+						//}
 						$messagecode = $doc->getElementsByTagName("result")->item(0)->getAttribute("code");
 						$message = $doc->getElementsByTagName("msg")->item(0)->nodeValue;
 						if ($messagecode != "1000") {
@@ -406,9 +542,9 @@ function fred_RegisterDomain($params) {
 					$response = $epp->request($xml);
 					$doc = new DOMDocument();
 					$doc->loadXML($response);
-					
+					//if ($params["debug"] == "on") {
 						logModuleCall("fredEPP", "EPP Host Check", $xml, $response);
-					
+					//}
 					$messagecode = $doc->getElementsByTagName("result")->item(0)->getAttribute("code");
 					$message = $doc->getElementsByTagName("msg")->item(0)->nodeValue;
 					if ($messagecode != "1000") {
@@ -432,9 +568,9 @@ function fred_RegisterDomain($params) {
 						$response = $epp->request($xml);
 						$doc = new DOMDocument();
 						$doc->loadXML($response);
-						
+						//if ($params["debug"] == "on") {
 							logModuleCall("fredEPP", "EPP Host Create", $xml, $response);
-						
+						//}
 						$messagecode = $doc->getElementsByTagName("result")->item(0)->getAttribute("code");
 						$message = $doc->getElementsByTagName("msg")->item(0)->nodeValue;
 						if ($messagecode != "1000") {
@@ -470,9 +606,9 @@ function fred_RegisterDomain($params) {
 			$xml = $epp->eppDomainInfo($params["original"]["sld"] . "." . $params["original"]["tld"], $params["transfersecret"]);
 			$doc = new DOMDocument();
 			$doc->loadXML($response);
-			
+			//if ($params["debug"] == "on") {
 				logModuleCall("fredEPP", "EPP Domain Information - Create", $xml, $response);
-		
+			//}
 			$messagecode = $doc->getElementsByTagName("result")->item(0)->getAttribute("code");
 			$message = $doc->getElementsByTagName("msg")->item(0)->nodeValue;
 			if ($messagecode != "1000") {
@@ -532,8 +668,9 @@ try {
 					return $values;
 				}
 		$RegistrantContactID = $doc->getElementsByTagName("registrant")->item(0)->nodeValue;
-		$AdminContactID = $doc->getElementsByTagName("registrant")->item(0)->nodeValue;
-		
+		$AdminContactID = $doc->getElementsByTagName("admin")->item(0)->nodeValue;
+		//$TechContactID = $doc->getElementsByTagName("registrant")->item(0)->nodeValue;
+		//$BillingContactID = $doc->getElementsByTagName("registrant")->item(0)->nodeValue;
 			if ($RegistrantContactID != "") {
 			$xml = $epp->eppContactInfo($RegistrantContactID);
 			$response = $epp->request($xml);
@@ -609,7 +746,89 @@ try {
 						
 			
 		}
-		
+		/*if ($TechContactID != "") {
+			$xml = $epp->eppContactInfo($TechContactID);
+			$response = $epp->request($xml);
+			$doc = new DOMDocument();
+			$doc->loadXML($response);
+			
+				logModuleCall("fredEPP", "EPP Tech Contact Information", $xml, $response);
+			
+			$messagecode = $doc->getElementsByTagName("result")->item(0)->getAttribute("code");
+			$message = $doc->getElementsByTagName("msg")->item(0)->nodeValue;
+			if ($messagecode != "1000") {
+				$xml = $epp->eppLogout();
+				$response = $epp->request($xml);
+				
+					logModuleCall("fredEPP", "EPP Logout", $xml, $response);
+				
+				$values["error"] = $messagecode . " - " . $message;
+				return $values;
+			}
+			
+					$values["Tech"]["Name"] = $doc->getElementsByTagName("name")->item(0)->nodeValue;
+					
+					$values["Tech"]["Company Name"] = $doc->getElementsByTagName("org")->item(0)->nodeValue;
+					
+					$values["Tech"]["Email Address"] = $doc->getElementsByTagName("email")->item(0)->nodeValue;
+					$values["Tech"]["Address 1"] = $doc->getElementsByTagName("street")->item(0)->nodeValue;
+					$values["Tech"]["Address 2"] = $doc->getElementsByTagName("street")->item(1)->nodeValue;
+					$values["Tech"]["Address 3"] = $doc->getElementsByTagName("street")->item(2)->nodeValue;
+					$values["Tech"]["City"] = $doc->getElementsByTagName("city")->item(0)->nodeValue;
+					
+						$values["Tech"]["State"] = $doc->getElementsByTagName("sp")->item(0)->nodeValue;
+					
+					
+						$values["Tech"]["Zip"] = $doc->getElementsByTagName("pc")->item(0)->nodeValue;
+					
+					$values["Tech"]["Country"] = $doc->getElementsByTagName("cc")->item(0)->nodeValue;
+				
+			list($values["Tech"]["Telephone Number CC"], $values["Tech"]["Telephone Number"]) = explode(".", $doc->getElementsByTagName("voice")->item(0)->nodeValue);
+			$values["Tech"]["Telephone Number CC"] = preg_replace("#[^0-9]#i", "", $values["Tech"]["Telephone Number CC"]);
+			
+			list($values["Tech"]["Fax Number CC"], $values["Tech"]["Fax Number"]) = explode(".", $doc->getElementsByTagName("fax")->item(0)->nodeValue);
+			$values["Tech"]["Fax Number CC"] = preg_replace("#[^0-9]#i", "", $values["Tech"]["Fax Number CC"]);
+			
+			
+		}
+		if ($BillingContactID != "") {
+			$xml = $epp->eppContactInfo($BillingContactID);
+			$response = $epp->request($xml);
+			$doc = new DOMDocument();
+			$doc->loadXML($response);
+			
+				logModuleCall("fredEPP", "EPP Billing Contact Information", $xml, $response);
+			
+			$messagecode = $doc->getElementsByTagName("result")->item(0)->getAttribute("code");
+			$message = $doc->getElementsByTagName("msg")->item(0)->nodeValue;
+			if ($messagecode != "1000") {
+				$xml = $epp->eppLogout();
+				$response = $epp->request($xml);
+				
+					logModuleCall("fredEPP", "EPP Logout", $xml, $response);
+				
+				$values["error"] = $messagecode . " - " . $message;
+				return $values;
+			}
+			
+			
+					$values["Billing"]["Name"] = $doc->getElementsByTagName("name")->item(0)->nodeValue;
+					$values["Billing"]["Company Name"] = $doc->getElementsByTagName("org")->item(0)->nodeValue;
+					$values["Billing"]["Email Address"] = $doc->getElementsByTagName("email")->item(0)->nodeValue;
+					$values["Billing"]["Address 1"] = $doc->getElementsByTagName("street")->item(0)->nodeValue;
+					$values["Billing"]["Address 2"] = $doc->getElementsByTagName("street")->item(1)->nodeValue;
+					$values["Billing"]["Address 3"] = $doc->getElementsByTagName("street")->item(2)->nodeValue;
+					$values["Billing"]["City"] = $doc->getElementsByTagName("city")->item(0)->nodeValue;
+					$values["Billing"]["State"] = $doc->getElementsByTagName("sp")->item(0)->nodeValue;
+					$values["Billing"]["Zip"] = $doc->getElementsByTagName("pc")->item(0)->nodeValue;
+					$values["Billing"]["Country"] = $doc->getElementsByTagName("cc")->item(0)->nodeValue;
+				
+			list($values["Billing"]["Telephone Number CC"], $values["Billing"]["Telephone Number"]) = explode(".", $doc->getElementsByTagName("voice")->item(0)->nodeValue);
+			$values["Billing"]["Telephone Number CC"] = preg_replace("#[^0-9]#i", "", $values["Billing"]["Telephone Number CC"]);
+			list($values["Billing"]["Fax Number CC"], $values["Billing"]["Fax Number"]) = explode(".", $doc->getElementsByTagName("fax")->item(0)->nodeValue);
+			$values["Billing"]["Fax Number CC"] = preg_replace("#[^0-9]#i", "", $values["Billing"]["Fax Number CC"]);
+			
+		} */
 	}
     catch (Exception $e) {
 		$values["error"] = $e->getMessage();
@@ -680,9 +899,9 @@ function fred_TransferDomain($params) {
 	$response = $epp->request($xml);
 				$doc = new DOMDocument();
 				$doc->loadXML($response);
-				
+				//if ($params["debug"] == "on") {
 					logModuleCall("fredEPP", "EPP Domain Transfer", $xml, $response);
-				
+				//}
 				$messagecode = $doc->getElementsByTagName("result")->item(0)->getAttribute("code");
 				$message = $doc->getElementsByTagName("msg")->item(0)->nodeValue;
 				if ($messagecode != "1000" && $messagecode != "1001") {
@@ -817,6 +1036,7 @@ function fred_SaveContactDetails($params) {
 	$adminPhonenumber = $params["contactdetails"]["Admin"]["Phone Number"];
 	# Put your code to save new WHOIS data here
 	# If error, return the error message in the value below
+	$domain=$params["sld"] . "." . $params["tld"];
 try {
 	//login
 	$epp = new myfredEPP();
@@ -843,16 +1063,16 @@ try {
 					return $values;
 				}
 		$Registrant_old = $doc->getElementsByTagName("registrant")->item(0)->nodeValue;
-		$Admin_old = $doc->getElementsByTagName("registrant")->item(0)->nodeValue;
+		$Admin_old = $doc->getElementsByTagName("admin")->item(0)->nodeValue;
     //Generate new registrant Contact
         $registrantContactID = $epp->eppContactId(16, "", "", 1);
 		$xml = $epp->eppContactCheck($registrantContactID);
 					$response = $epp->request($xml);
 					$doc = new DOMDocument();
 					$doc->loadXML($response);
-					
+					//if ($params["debug"] == "on") {
 						logModuleCall("fredEPP", "EPP Contact Check", $xml, $response);
-					
+					//}
 					$messagecode = $doc->getElementsByTagName("result")->item(0)->getAttribute("code");
 					$message = $doc->getElementsByTagName("msg")->item(0)->nodeValue;
 					if ($messagecode != "1000") {
@@ -913,13 +1133,13 @@ try {
 					$contactAvailable = $doc->getElementsByTagName("id")->item(0)->getAttribute("avail");
 					if ($contactAvailable != "0" && $contactAvailable != "false") {
 						$postalInfo = array("" => array("name" => $adminName, "org" => $adminCompany, "street" => array(0 => $adminStreet, 1 => "", 2 => ""), "city" => $adminCity, "sp" => $adminState, "pc" => $adminZip, "cc" => $adminCountry));
-						$xml = $epp->eppContactCreate($adminContactID, $postalInfo, $adminPhonenumber, "", $$adminEmail, $epp->eppKey(), "", "", "", "");
+						$xml = $epp->eppContactCreate($adminContactID, $postalInfo, $adminPhonenumber, "", $adminEmail, $epp->eppKey(), "", "", "", "");
 						$response = $epp->request($xml);
 						$doc = new DOMDocument();
 						$doc->loadXML($response);
-						
+						//if ($params["debug"] == "on") {
 							logModuleCall("fredEPP", "Admin EPP Contact Create", $xml, $response);
-						
+						//}
 						$messagecode = $doc->getElementsByTagName("result")->item(0)->getAttribute("code");
 						$message = $doc->getElementsByTagName("msg")->item(0)->nodeValue;
 						if ($messagecode != "1000") {
