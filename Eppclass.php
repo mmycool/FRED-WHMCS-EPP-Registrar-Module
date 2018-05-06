@@ -115,7 +115,7 @@ class myfredEPP {
                 $dom->formatOutput = true;
                 $dom->loadXML($xml);
 
-                file_put_contents('/home/mabula/public_html/jaribu/fred/mw/com_output.xml', $dom->saveXML()
+                file_put_contents('com_output.xml', $dom->saveXML()
 , FILE_APPEND);
                 //return 
                 
@@ -133,7 +133,7 @@ class myfredEPP {
 		if($this->socket) {
 			$xml = $this->getXML(); // Get the current XML frame
 			$this->_logframe($xml); // Log the frame if enabled.
-            file_put_contents('/home/mabula/public_html/jaribu/fred/mw/command.xml', $xml, FILE_APPEND);
+            file_put_contents('command.xml', $xml, FILE_APPEND);
 			return fwrite($this->socket, pack('N', (strlen($xml)+4)).$xml);
 		}
 
@@ -176,7 +176,7 @@ class myfredEPP {
 			//$xml = simplexml_load_string($xml);
 			//$xml = $this->getXML(); // Get the current XML frame
 			//$this->_logframe($xml); // Log the frame if enabled.
-            file_put_contents('/home/mabula/public_html/jaribu/fred/mw/command.xml', $xml, FILE_APPEND);
+            file_put_contents('command.xml', $xml, FILE_APPEND);
 			return fwrite($this->socket, pack('N', (strlen($xml)+4)).$xml);
 		}
 
