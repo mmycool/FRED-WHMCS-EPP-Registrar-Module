@@ -63,8 +63,8 @@ class myfredEPP {
 		$context = stream_context_create(array(
 			'ssl'=>array(			
 			'local_cert' => EPP_CERT,
-             		 'verify_peer' => false,
-                         'verify_peer_name' => false,	           								
+			'verify_peer' => false,
+             'verify_peer_name' => false,		            								
 			)
 		));
 
@@ -115,7 +115,8 @@ class myfredEPP {
                 $dom->formatOutput = true;
                 $dom->loadXML($xml);
 
-              //  file_put_contents('/home/afrireg2/public_html/jaribu/fred/mw/com_output.xml', $dom->saveXML(), FILE_APPEND);
+                file_put_contents('/home/mabula/public_html/jaribu/fred/mw/com_output.xml', $dom->saveXML()
+, FILE_APPEND);
                 //return 
                 
                 return $xml;
@@ -132,7 +133,7 @@ class myfredEPP {
 		if($this->socket) {
 			$xml = $this->getXML(); // Get the current XML frame
 			$this->_logframe($xml); // Log the frame if enabled.
-           // file_put_contents('/home/afrireg2/public_html/jaribu/fred/mw/command.xml', $xml, FILE_APPEND);
+            file_put_contents('/home/mabula/public_html/jaribu/fred/mw/command.xml', $xml, FILE_APPEND);
 			return fwrite($this->socket, pack('N', (strlen($xml)+4)).$xml);
 		}
 
@@ -175,7 +176,7 @@ class myfredEPP {
 			//$xml = simplexml_load_string($xml);
 			//$xml = $this->getXML(); // Get the current XML frame
 			//$this->_logframe($xml); // Log the frame if enabled.
-         //   file_put_contents('/home/afrireg2/public_html/jaribu/fred/mw/command.xml', $xml, FILE_APPEND);
+            file_put_contents('/home/mabula/public_html/jaribu/fred/mw/command.xml', $xml, FILE_APPEND);
 			return fwrite($this->socket, pack('N', (strlen($xml)+4)).$xml);
 		}
 
@@ -567,12 +568,12 @@ public function creditInfo() {
 	public function eppDomainCreate($domain, $periodUnit, $period, $nsset, $registrantContactID, $adminContactID, $techContactID, $billingContactID) {
 		$command = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\r\n<epp xmlns=\"urn:ietf:params:xml:ns:epp-1.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd\">\r\n  <command>\r\n    <create>\r\n      <domain:create xmlns:domain=\"http://www.nic.cz/xml/epp/domain-1.4\" xsi:schemaLocation=\"http://www.nic.cz/xml/epp/domain-1.4 domain-1.4.xsd\">\r\n        <domain:name>" . $domain . "</domain:name>\r\n        <domain:period unit=\"" . $periodUnit . "\">" . $period . "</domain:period>\r\n      ";
 		if ($nsset != "") {
-			foreach ($nsset as $nssetID) {
-				if (!($nssetID != "")) {
-					continue;
-				}
-				$command .= "  <domain:nsset>" . $nssetID . "</domain:nsset>\r\n      ";
-			}
+			//foreach ($nsset as $nssetID) {
+			//	if (!($nssetID != "")) {
+			//		continue;
+			//	}
+				$command .= "  <domain:nsset>" . $nsset . "</domain:nsset>\r\n      ";
+		//	}
 		}
 		if ($registrantContactID != "") {
 			$command .= "  <domain:registrant>" . $registrantContactID . "</domain:registrant>\r\n      ";
@@ -630,26 +631,33 @@ public function creditInfo() {
 	public function eppDomainContactUpdate($domain, $newContact, $oldContact) {
 		$command = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\r\n<epp xmlns=\"urn:ietf:params:xml:ns:epp-1.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd\">\r\n  <command>\r\n    <update>\r\n      <domain:update xmlns:domain=\"http://www.nic.cz/xml/epp/domain-1.4\" xsi:schemaLocation=\"http://www.nic.cz/xml/epp/domain-1.4 domain-1.4.xsd\">\r\n        <domain:name>" . $domain . "</domain:name>\r\n      ";
 		if ($newContact != "") {
-			if ($newContact[0]["type"] == "registrant") {
-				$command .= "  <domain:chg>\r\n            <domain:registrant>" . $newContact[0]["id"] . "</domain:registrant>\r\n          </domain:chg>\r\n      ";
-			}
-			else {
+			
+			if($newContact[1]["type"]=="admin") {
 				$command .= "  <domain:add>\r\n      ";
 				foreach ($newContact as $contact) {
 					if (!($contact != "")) {
 						continue;
 					}
+					if($contact["type"]=="registrant"){
+					    continue;
+					}
 					$command .= "    <domain:" . $contact["type"] . ">" . $contact["id"] . "</domain:" . $contact["type"] . ">\r\n      ";
 				}
 				$command .= "  </domain:add>\r\n      ";
 			}
+			if ($newContact[0]["type"] == "registrant") {
+				$command .= "  <domain:chg>\r\n            <domain:registrant>" . $newContact[0]["id"] . "</domain:registrant>\r\n          </domain:chg>\r\n      ";
+			}
 		}
-		if ($oldContact != "") {
+		if ($Admin_old != "") {
 			$command .= "  <domain:rem>\r\n      ";
 			foreach ($oldContact as $contact) {
 				if (!($contact != "")) {
 					continue;
 				}
+				if($contact["type"]=="registrant"){
+					    continue;
+					}
 				$command .= "    <domain:" . $contact["type"] . ">" . $contact["id"] . "</domain:" . $contact["type"] . ">\r\n      ";
 			}
 			$command .= "  </domain:rem>\r\n      ";
@@ -746,9 +754,9 @@ public function creditInfo() {
 	public function eppHostCreate($hostId, $ns, $techId) {
 		$command = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\r\n<epp xmlns=\"urn:ietf:params:xml:ns:epp-1.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd\">\r\n  <command>\r\n    <create>\r\n      <nsset:create xmlns:nsset=\"http://www.nic.cz/xml/epp/nsset-1.2\" xsi:schemaLocation=\"http://www.nic.cz/xml/epp/nsset-1.2 nsset-1.2.xsd\">\r\n        <nsset:id>" . $hostId . "</nsset:id>\r\n      ";
 		foreach ($ns as $host) {
-			//if (!($host["name"] != "")) {
-			//	continue;
-		//	}
+			if (!($host != "")) {
+				continue;
+			}
 			$command .= "  <nsset:ns>\r\n          <nsset:name>" . $host . "</nsset:name>\r\n      ";
 			//foreach ($host["ip"] as $ip) {
 			//	if (!($ip["address"] != "")) {
