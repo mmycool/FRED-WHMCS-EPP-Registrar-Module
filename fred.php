@@ -577,7 +577,7 @@ function fred_RegisterDomain($params) {
     if(!empty($params["ns5"])) 
         array_push($nameservers,$params["ns5"]);
 						
-						$xml = $epp->eppHostCreate($hostID, $nameservers, $RegistrantContactID);
+						$xml = $epp->eppHostCreate($hostID, $nameservers, $adminContactID);
 						$response = $epp->request($xml);
 						$doc = new DOMDocument();
 						$doc->loadXML($response);
