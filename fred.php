@@ -536,8 +536,8 @@ function fred_RegisterDomain($params) {
 					}
 	$techContact = "";
     $billingContact = "";
-    //Create hosts
-    $hostID = $epp->eppContactId(16, "", "", 1);
+    //Create New NSSET
+ $hostID = $epp->eppContactId(16, "", "", 1);
 					$xml = $epp->eppHostCheck($hostID);
 					$response = $epp->request($xml);
 					$doc = new DOMDocument();
@@ -558,16 +558,30 @@ function fred_RegisterDomain($params) {
 					}
 					$hostAvailable = $doc->getElementsByTagName("id")->item(0)->getAttribute("avail");
 					if ($hostAvailable != "0" && $hostAvailable != "false") {
-						$i = 0;
+						/*$i = 0;
 						foreach ($ns as $hostname) {
 							$host[$i]["name"] = $hostname;
 							$host[$i]["ip"] = array();
 							++$i;
 						}
-						$xml = $epp->eppHostCreate($hostID, $host, $adminContact[0]);
+						*/
+	$nameservers=array();
+    if (!empty($params["ns1"]))
+        array_push($nameservers,$params["ns1"]);
+    if (!empty($params["ns2"]))
+        array_push($nameservers,$params["ns2"]);
+    if(!empty($params["ns3"]))
+        array_push($nameservers,$params["ns3"]);
+    if(!empty($params["ns4"])) 
+        array_push($nameservers,$params["ns4"]);
+    if(!empty($params["ns5"])) 
+        array_push($nameservers,$params["ns5"]);
+						
+						$xml = $epp->eppHostCreate($hostID, $nameservers, $RegistrantContactID);
 						$response = $epp->request($xml);
 						$doc = new DOMDocument();
 						$doc->loadXML($response);
+						
 						//if ($params["debug"] == "on") {
 							logModuleCall("fredEPP", "EPP Host Create", $xml, $response);
 						//}
